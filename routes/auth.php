@@ -33,7 +33,7 @@ Route::middleware('guest')->group(function () {
 
     Route::post('reset-password', [NewPasswordController::class, 'store'])
                 ->name('password.store');
-});
+})->middleware('throttle:5,2');
 
 Route::middleware('auth')->group(function () {
     Route::get('verify-email', EmailVerificationPromptController::class)
@@ -47,6 +47,9 @@ Route::middleware('auth')->group(function () {
                 ->middleware('throttle:6,1')
                 ->name('verification.send');
 
+    Route::post('sendVerificationCode', [AuthenticatedSessionController::class, 'sendVerificationCode'])
+                ->name('sendVerificationCode');
+
     Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])
                 ->name('password.confirm');
 
@@ -56,4 +59,8 @@ Route::middleware('auth')->group(function () {
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
                 ->name('logout');
-});
+    Route::post('codeVerification', [AuthenticatedSessionController::class, 'codeVerification'])
+                ->name('codeVerification');
+    Route::post('resendCode', [AuthenticatedSessionController::class, 'resendCode'])
+                ->name('resendCode');
+})->middleware('throttle:5,2');
