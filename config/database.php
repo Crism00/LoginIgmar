@@ -75,8 +75,8 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'search_path' => 'public',
-            'sslmode' => 'verify-ca',
-	    'sslrootcert' => '/var/cache/nginx/.postgresql/root.crt',
+            'sslmode' => env('DB_SSLMODE', 'prefer'),
+	        'sslrootcert' => env('DB_SSLROOTCERT'),
         ],
 
         'sqlsrv' => [

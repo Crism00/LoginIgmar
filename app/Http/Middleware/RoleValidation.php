@@ -25,12 +25,15 @@ class RoleValidation
     {
         try{
             if (!in_array($request->user()->role_id, $roles)){
-                return redirect()->route('dashboard'. $request->user()->role_id)->with('error', 'No tienes permiso para acceder a esta página.');
+                return redirect()->route('dashboard'. $request->user()->role_id)->withErrors('error', 'No tienes permiso para acceder a esta página.');
             }
             return $next($request);
         }
         catch(\Exception $e){
-            return redirect()->route('/');
+            if($request->session()->has('user')){
+                return $next($request);
+            }
+            return redirect()->route('/')->withErrors($e->getMessage());
         }
     }
 }

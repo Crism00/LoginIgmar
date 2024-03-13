@@ -67,5 +67,6 @@ class Kernel extends HttpKernel
         'RoleValidation' => \App\Http\Middleware\RoleValidation::class,
         'twoFactor' => \App\Http\Middleware\TwoFactor::class,
         'twoFactorTrue' => \App\Http\Middleware\TwoFactorTrue::class,
+        'SetUser' => \App\Http\Middleware\SetUser::class,
     ];
 }

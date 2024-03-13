@@ -15,8 +15,15 @@ class TwoFactorTrue
      */
     public function handle(Request $request, Closure $next): Response
     {
+        if($request->session()->has('user')){
+            $user = $request->session()->get('user');
+            if($user->two_factor == true && $user->role_id == 1){
+                return redirect()->route('codeVerification')->withErrors('Please complete Two Factor Authentication');
+            }
+            return $next($request);
+        }
         if($request->user()->two_factor == true && $request->user()->role_id == 1){
-            return redirect()->route('/');
+            return redirect()->route('/')->withErrors('Please complete Two Factor Authentication');
         };
         return $next($request);
     }

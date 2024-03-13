@@ -20,7 +20,7 @@ Route::get('/', function () {
 })->name('/');
 Route::get('/codeVerification', function (){
     return view('auth.enter-code');
-})->name('codeVerification')->middleware('RoleValidation:1')->middleware('verified')->middleware('twoFactorTrue');
+})->name('codeVerificationView')->middleware('RoleValidation:1')->middleware('twoFactorTrue');
 
 Route::get('/dashboard', function () {
     return view('dashboard');

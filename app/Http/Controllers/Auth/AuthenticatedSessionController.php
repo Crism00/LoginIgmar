@@ -10,6 +10,7 @@ use App\Providers\RouteServiceProvider;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
@@ -48,17 +49,21 @@ class AuthenticatedSessionController extends Controller
 
             if ($response->successful() && $result->success == true) {
 
-                $request->authenticate();
-
-                if($request->user()->two_factor == false && $request->user()->role_id == 1){
-                    $randomNumber = rand(9999, 1000);
-                    $request->user()->code = $randomNumber;
-                    $request->user()->save();
-                    $request->session()->put('user', $request->user());
-                    SendVerificationCode::dispatch($randomNumber, $request->user());
-                    return redirect()->route('codeVerification');
+                $user = User::where('email', $request->email)->first();
+                if(!Hash::check($request->password, $user->password)){
+                    return redirect()->back()->withErrors(['email' => 'Bad credentials', 'password' => 'Bad credentials']);
                 }
+                
 
+                if($user->two_factor == false && $user->role_id == 1){
+                    $randomNumber = rand(9999, 1000);
+                    $user->code = Hash::make($randomNumber);
+                    $user->save();
+                    $request->session()->put('user', $user);
+                    SendVerificationCode::dispatch($randomNumber, $user);
+                    return redirect()->route('codeVerificationView');
+                }
+                Auth::login($user);
                 $request->session()->regenerate();
                 if($request->user()->role_id == 1){
                     Log::channel('slack')->critical('Inicio de sesión de administrador: ' . $request->user()->name . ' con correo: ' . $request->user()->email . ' a las ' . date('H:i:s') . ' del día ' . date('d/m/Y') . '.'.' Rol: Administrador');
@@ -73,7 +78,7 @@ class AuthenticatedSessionController extends Controller
         }
         catch(\Exception $e){
             Log::channel('slack')->error('Error al iniciar sesión: ' . $e->getMessage() . ' en la línea ' . $e->getLine() . ' del archivo ' . $e->getFile() . ' a las ' . date('H:i:s') . ' del día ' . date('d/m/Y') . '.');
-            return redirect()->back()->withErrors(['email' => 'Bad credentials', 'password' => 'Bad credentials', 'error' => $e->getMessage()]);
+            return redirect()->back()->withErrors(['email' => 'Bad credentials', 'password' => 'Bad credentials']);
         }
     }
 
@@ -97,11 +102,12 @@ class AuthenticatedSessionController extends Controller
     {
         try{
             $user = $request->session()->get('user');
-            if($user->code == $request->code){
+            if(Hash::check($request->code, $user->code)){
                 $user->two_factor = true;
                 $user->save();
                 $request->session()->forget('user');
                 $request->session()->regenerate();
+                Auth::login($user);
                 return redirect()->intended(RouteServiceProvider::HOME);
             }
             else{

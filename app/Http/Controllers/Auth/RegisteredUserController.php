@@ -57,7 +57,7 @@ class RegisteredUserController extends Controller
                 'name' => $request->name,
                 'email' => $request->email,
                 'role_id' => $role_id,
-                'verification_code' => $randomNumber,
+                'verification_code' => Hash::make($randomNumber),
                 'two_factor' => 0,
                 'password' => Hash::make($request->password),
             ]);
@@ -70,7 +70,7 @@ class RegisteredUserController extends Controller
                 now()->addMinutes(60),
                 ['id' => $user->id, 'hash' => sha1($user->email)]
             ));
-            Auth::login($user);
+            $request->session()->put('email', $user->email);
 
             return redirect(RouteServiceProvider::HOME);
         }

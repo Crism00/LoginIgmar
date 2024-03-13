@@ -20,7 +20,7 @@ return new class extends Migration
             $table->rememberToken();
             $table->timestamps();
             $table->unsignedBigInteger('role_id');
-            $table->string('code',4)->nullable();
+            $table->string('code')->nullable();
             $table->boolean('two_factor');
             $table->foreign('role_id')->references('id')->on('roles');
         });

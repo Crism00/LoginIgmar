@@ -37,19 +37,15 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('verify-email', EmailVerificationPromptController::class)
-                ->name('verification.notice');
+    ->name('verification.notice');
 
-    Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)
-                ->middleware(['signed', 'throttle:6,1'])
-                ->name('verification.verify');
+Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)
+    ->middleware(['signed', 'throttle:6,1'])
+    ->name('verification.verify');
 
-    Route::post('email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
-                ->middleware('throttle:6,1')
-                ->name('verification.send');
-
-    Route::post('sendVerificationCode', [AuthenticatedSessionController::class, 'sendVerificationCode'])
-                ->name('sendVerificationCode');
-
+Route::post('email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
+    ->middleware('throttle:6,1')
+    ->name('verification.send');
     Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])
                 ->name('password.confirm');
 
@@ -59,8 +55,15 @@ Route::middleware('auth')->group(function () {
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
                 ->name('logout');
+
+})->middleware('throttle:5,2');
+
+Route::middleware('SetUser')->group(function () {
     Route::post('codeVerification', [AuthenticatedSessionController::class, 'codeVerification'])
                 ->name('codeVerification');
     Route::post('resendCode', [AuthenticatedSessionController::class, 'resendCode'])
                 ->name('resendCode');
-})->middleware('throttle:5,2');
+
+    Route::post('sendVerificationCode', [AuthenticatedSessionController::class, 'sendVerificationCode'])
+                ->name('sendVerificationCode');
+});
